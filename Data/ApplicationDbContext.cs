@@ -27,6 +27,9 @@ public class ApplicationDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
+        // Set default schema for PostgreSQL
+        modelBuilder.HasDefaultSchema("public");
+
         // Product configuration
         modelBuilder.Entity<Product>(entity =>
         {
@@ -34,7 +37,9 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).HasMaxLength(500);
             entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.Price).HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Price).HasColumnType("numeric(18,2)");
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
+            entity.Property(e => e.UpdatedAt).HasColumnType("timestamp without time zone");
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.Category);
         });
@@ -48,6 +53,8 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(50);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(50);
             entity.Property(e => e.PasswordHash).IsRequired();
+            entity.Property(e => e.Role).HasConversion<int>();
+            entity.Property(e => e.CreatedAt).HasColumnType("timestamp without time zone");
             entity.HasIndex(e => e.Username).IsUnique();
             entity.HasIndex(e => e.Email).IsUnique();
         });
