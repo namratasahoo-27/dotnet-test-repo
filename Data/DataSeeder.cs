@@ -1,7 +1,6 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SampleDotNet6App.Models;
-using System.Security.Cryptography;
-using System.Text;
 
 namespace SampleDotNet6App.Data;
 
@@ -132,8 +131,8 @@ public static class DataSeeder
 
     private static string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
+        var passwordHasher = new PasswordHasher<User>();
+        var dummyUser = new User();
+        return passwordHasher.HashPassword(dummyUser, password);
     }
 }

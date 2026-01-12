@@ -1,4 +1,5 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SampleDotNet6App.Data;
@@ -6,7 +7,6 @@ using SampleDotNet6App.DTOs;
 using SampleDotNet6App.Models;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SampleDotNet6App.Services;
@@ -20,6 +20,7 @@ public class UserService : IUserService
     private readonly IMapper _mapper;
     private readonly ILogger<UserService> _logger;
     private readonly IConfiguration _configuration;
+    private readonly PasswordHasher<User> _passwordHasher;
 
     public UserService(ApplicationDbContext context, IMapper mapper, ILogger<UserService> logger, IConfiguration configuration)
     {
@@ -27,6 +28,7 @@ public class UserService : IUserService
         _mapper = mapper;
         _logger = logger;
         _configuration = configuration;
+        _passwordHasher = new PasswordHasher<User>();
     }
 
     public async Task<AuthResponseDto?> AuthenticateAsync(LoginDto loginDto)
@@ -107,15 +109,15 @@ public class UserService : IUserService
 
     private string HashPassword(string password)
     {
-        using var sha256 = SHA256.Create();
-        var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-        return Convert.ToBase64String(hashedBytes);
+        var dummyUser = new User();
+        return _passwordHasher.HashPassword(dummyUser, password);
     }
 
     private bool VerifyPassword(string password, string hash)
     {
-        var hashedInput = HashPassword(password);
-        return hashedInput.Equals(hash);
+        var dummyUser = new User();
+        var result = _passwordHasher.VerifyHashedPassword(dummyUser, hash, password);
+        return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
     }
 
     private string GenerateJwtToken(User user)

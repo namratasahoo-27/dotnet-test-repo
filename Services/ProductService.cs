@@ -30,7 +30,7 @@ public class ProductService : IProductService
 
         if (!string.IsNullOrEmpty(category))
         {
-            query = query.Where(p => p.Category.ToLower().Contains(category.ToLower()));
+            query = query.Where(p => EF.Functions.Like(p.Category, $"%{category}%"));
         }
 
         if (isActive.HasValue)
@@ -97,9 +97,9 @@ public class ProductService : IProductService
         _logger.LogInformation("Searching products with term: {SearchTerm}", searchTerm);
 
         var products = await _context.Products
-            .Where(p => p.Name.ToLower().Contains(searchTerm.ToLower()) ||
-                       p.Description.ToLower().Contains(searchTerm.ToLower()) ||
-                       p.Category.ToLower().Contains(searchTerm.ToLower()))
+            .Where(p => EF.Functions.Like(p.Name, $"%{searchTerm}%") ||
+                       EF.Functions.Like(p.Description, $"%{searchTerm}%") ||
+                       EF.Functions.Like(p.Category, $"%{searchTerm}%"))
             .Where(p => p.IsActive)
             .OrderBy(p => p.Name)
             .ToListAsync();
